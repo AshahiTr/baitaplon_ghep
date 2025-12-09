@@ -20,15 +20,15 @@ export const fetchCategories = createAsyncThunk('categories/fetchAll', async () 
 
 export const createCategory = createAsyncThunk(
   'categories/create',
-  async (name: string) => {
-    return await categoriesApi.create(name);
+  async (categoryData: Omit<Category, "id">) => {
+    return await categoriesApi.create(categoryData);
   }
 );
 
 export const updateCategory = createAsyncThunk(
   'categories/update',
   async ({ id, name }: { id: string; name: string }) => {
-    return await categoriesApi.update(id, name);
+    return await categoriesApi.update(id, { name });
   }
 );
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { fetchTransactions } from '../../redux/transactionsSlice';
+import { fetchTransactions, updateTransaction } from '../../redux/transactionsSlice';
 import { fetchBooks } from '../../redux/booksSlice';
 import { fetchUsers, updateUser } from '../../redux/usersSlice';
 import './Transaction.css';
@@ -21,11 +21,37 @@ const OverdueManagement: React.FC = () => {
     dispatch(fetchUsers());
   }, [dispatch]);
 
+  useEffect(() => {
+    const updateOverdueStatus = async () => {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      for (const transaction of transactions) {
+        if (transaction.status === 'borrowing' && !transaction.returnDate) {
+          const dueDate = new Date(transaction.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+
+          if (dueDate < now) {
+            await dispatch(updateTransaction({
+              id: transaction.id,
+              updates: { status: 'overdue' }
+            }));
+          }
+        }
+      }
+    };
+
+    updateOverdueStatus();
+  }, [transactions, dispatch]);
+
   const getOverdueTransactions = () => {
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
     return transactions.filter(t => {
       if (t.status === 'returned') return false;
       const dueDate = new Date(t.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
       return dueDate < now;
     });
   };
@@ -43,6 +69,8 @@ const OverdueManagement: React.FC = () => {
   const getOverdueDays = (dueDate: string) => {
     const due = new Date(dueDate);
     const now = new Date();
+    due.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
     return Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
   };
 
@@ -72,6 +100,7 @@ const OverdueManagement: React.FC = () => {
     setShowPenaltyForm(false);
     setSelectedReader(null);
     setPenaltyAmount('');
+    alert('Đã xử phạt thành công!');
   };
 
   const overdueTransactions = getOverdueTransactions();
@@ -111,7 +140,9 @@ const OverdueManagement: React.FC = () => {
                     <td>{getBookTitle(transaction.bookId)}</td>
                     <td>{new Date(transaction.borrowDate).toLocaleDateString('vi-VN')}</td>
                     <td>{new Date(transaction.dueDate).toLocaleDateString('vi-VN')}</td>
-                    <td className="overdue-days">{overdueDays} ngày</td>
+                    <td className="overdue-days">
+                      <strong>⚠️ {overdueDays} ngày</strong>
+                    </td>
                     <td>
                       <button 
                         className="btn-small btn-penalty" 

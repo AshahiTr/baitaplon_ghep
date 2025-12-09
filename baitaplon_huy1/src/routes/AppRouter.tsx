@@ -5,6 +5,8 @@ import Layout from '../components/Layout';
 import ProtectedRoute from '../components/Auth/ProtectedRoute';
 import Login from '../components/Auth/Login';
 import Register from '../components/Auth/Register';
+import ForgotPassword from '../components/Auth/ForgotPassword';
+import ResetPassword from '../components/Auth/ResetPassword';
 import BookList from '../components/Book/BookList';
 import BookListUser from '../components/Book/BookListUser';
 import CategoryList from '../components/Category/CategoryList';
@@ -46,6 +48,8 @@ const AppRouter: React.FC = () => {
       <Routes>
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
         <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
+        <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/" />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={

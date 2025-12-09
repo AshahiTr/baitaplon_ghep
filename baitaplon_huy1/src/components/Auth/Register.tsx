@@ -28,7 +28,7 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      // Validate form
+
       if (!formData.email || !formData.password || !formData.fullName) {
         setError('Vui lòng điền đầy đủ thông tin bắt buộc');
         setLoading(false);
@@ -41,7 +41,6 @@ const Register: React.FC = () => {
         return;
       }
 
-      // Bước 1: Tạo tài khoản Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -61,11 +60,10 @@ const Register: React.FC = () => {
         throw new Error('Không thể tạo tài khoản');
       }
 
-      // Bước 2: Lưu thông tin user vào bảng users
       const { error: dbError } = await supabase
         .from('users')
         .insert([{
-          id: authData.user.id, // Dùng ID từ Supabase Auth
+          id: authData.user.id,
           email: formData.email,
           full_name: formData.fullName,
           phone: formData.phone || null,
@@ -76,7 +74,6 @@ const Register: React.FC = () => {
         }]);
 
       if (dbError) {
-        // Nếu lỗi khi lưu vào database, xóa tài khoản auth đã tạo
         console.error('Error saving user to database:', dbError);
         throw new Error('Lỗi lưu thông tin người dùng');
       }
@@ -89,7 +86,6 @@ const Register: React.FC = () => {
     } catch (err: any) {
       console.error('Registration error:', err);
       
-      // Xử lý các lỗi cụ thể
       if (err.message?.includes('already registered')) {
         setError('Email này đã được đăng ký');
       } else if (err.message?.includes('Invalid email')) {
@@ -112,7 +108,7 @@ const Register: React.FC = () => {
         {error && <div className="error-message">{error}</div>}
         {success && (
           <div className="success-message">
-            Đăng ký thành công! Đang chuyển hướng...
+            Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản trước khi đăng nhập.
           </div>
         )}
 

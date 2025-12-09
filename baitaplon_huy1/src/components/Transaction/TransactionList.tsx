@@ -21,6 +21,30 @@ const TransactionList: React.FC = () => {
     dispatch(fetchUsers());
   }, [dispatch]);
 
+
+  useEffect(() => {
+    const updateOverdueStatus = async () => {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); 
+
+      for (const transaction of transactions) {
+        if (transaction.status === 'borrowing' && !transaction.returnDate) {
+          const dueDate = new Date(transaction.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+
+          if (dueDate < now) {
+            await dispatch(updateTransaction({
+              id: transaction.id,
+              updates: { status: 'overdue' }
+            }));
+          }
+        }
+      }
+    };
+
+    updateOverdueStatus();
+  }, [transactions, dispatch]);
+
   const activeTransactions = transactions.filter(
     t => t.status !== 'pending' && t.status !== 'returned'
   );
@@ -38,14 +62,24 @@ const TransactionList: React.FC = () => {
   const getOverdueDays = (dueDate: string) => {
     const due = new Date(dueDate);
     const now = new Date();
+    due.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
     const diff = Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 0;
   };
 
   const getStatus = (transaction: any) => {
     if (transaction.returnDate) return 'returned';
-    const overdueDays = getOverdueDays(transaction.dueDate);
-    return overdueDays > 0 ? 'overdue' : 'borrowing';
+    
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dueDate = new Date(transaction.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    if (dueDate < now) {
+      return 'overdue';
+    }
+    return 'borrowing';
   };
 
   const handleDelete = (id: string) => {
@@ -101,7 +135,7 @@ const TransactionList: React.FC = () => {
               const status = getStatus(transaction);
               const overdueDays = getOverdueDays(transaction.dueDate);
               return (
-                <tr key={transaction.id}>
+                <tr key={transaction.id} className={status === 'overdue' ? 'overdue-row' : ''}>
                   <td>{getReaderName(transaction.readerId)}</td>
                   <td>{getBookTitle(transaction.bookId)}</td>
                   <td>{new Date(transaction.borrowDate).toLocaleDateString('vi-VN')}</td>
@@ -117,7 +151,13 @@ const TransactionList: React.FC = () => {
                       {status === 'overdue' ? 'Quá hạn' : 'Đang mượn'}
                     </span>
                   </td>
-                  <td>{overdueDays > 0 ? `Quá hạn ${overdueDays} ngày` : '-'}</td>
+                  <td>
+                    {overdueDays > 0 ? (
+                      <span style={{ color: 'var(--neon-pink)', fontWeight: 'bold' }}>
+                        ⚠️ Quá hạn {overdueDays} ngày
+                      </span>
+                    ) : '-'}
+                  </td>
                   <td>
                     <button 
                       className="btn-small btn-delete" 

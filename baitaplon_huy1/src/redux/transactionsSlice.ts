@@ -55,27 +55,54 @@ const transactionsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch all transactions
+      .addCase(fetchTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
+        state.loading = false;
         state.transactions = action.payload;
       })
+      .addCase(fetchTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch transactions';
+      })
+      // Fetch pending transactions
+      .addCase(fetchPendingTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchPendingTransactions.fulfilled, (state, action) => {
+        state.loading = false;
         state.pending = action.payload;
       })
+      .addCase(fetchPendingTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch pending transactions';
+      })
+      // Create transaction
       .addCase(createTransaction.fulfilled, (state, action) => {
         state.transactions.push(action.payload);
         if (action.payload.status === 'pending') {
           state.pending.push(action.payload);
         }
       })
+      // Update transaction
       .addCase(updateTransaction.fulfilled, (state, action) => {
         const index = state.transactions.findIndex(t => t.id === action.payload.id);
         if (index !== -1) {
           state.transactions[index] = action.payload;
         }
-        state.pending = state.pending.filter(t => t.id !== action.payload.id);
+        // Remove from pending if status changed
+        if (action.payload.status !== 'pending') {
+          state.pending = state.pending.filter(t => t.id !== action.payload.id);
+        }
       })
+      // Delete transaction
       .addCase(deleteTransaction.fulfilled, (state, action) => {
         state.transactions = state.transactions.filter(t => t.id !== action.payload);
+        state.pending = state.pending.filter(t => t.id !== action.payload);
       });
   },
 });

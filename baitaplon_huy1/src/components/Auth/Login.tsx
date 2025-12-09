@@ -46,6 +46,26 @@ const Login: React.FC = () => {
               required
             />
           </div>
+          
+
+          <div style={{ textAlign: 'right', marginBottom: '15px' }}>
+            <Link 
+              to="/forgot-password" 
+              style={{ 
+                color: 'var(--neon-cyan)', 
+                fontSize: '13px',
+                textDecoration: 'none',
+                fontFamily: 'Rajdhani',
+                fontWeight: 600,
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--neon-pink)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--neon-cyan)'}
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
+
           <button type="submit" className="btn-primary">Đăng nhập</button>
         </form>
         <div className="auth-link">

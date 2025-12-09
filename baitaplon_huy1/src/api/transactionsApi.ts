@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { Transaction } from './mockData'
 
-// Helper function để map snake_case từ Supabase sang camelCase
 const mapTransactionFromSupabase = (data: any): Transaction => ({
   id: data.id,
   readerId: data.reader_id,
@@ -25,6 +24,20 @@ export const transactionsApi = {
     
     if (error) throw error
     return data.map(mapTransactionFromSupabase)
+  },
+
+  getPending: async (): Promise<Transaction[]> => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching pending transactions:', error)
+      throw error
+    }
+    return data ? data.map(mapTransactionFromSupabase) : []
   },
 
   getById: async (id: string): Promise<Transaction | null> => {

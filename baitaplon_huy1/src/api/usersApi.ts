@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { User } from './mockData'
 
-// Helper function để map snake_case từ Supabase sang camelCase
 const mapUserFromSupabase = (data: any): User => ({
   id: data.id,
   email: data.email,
